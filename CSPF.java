@@ -1,6 +1,6 @@
 import java.util.Arrays;
 
-public class uniCSPF {
+public class CSPF {
 
     static int n = 3;
     static int index = 1;
@@ -60,6 +60,7 @@ public class uniCSPF {
     }
 
     public static int calcTotalDisp(int[] pref) {
+
         int[] finalPos = simulate(pref);
         int total = 0;
         for (int i = 0; i < pref.length; i++) {
@@ -94,16 +95,19 @@ public class uniCSPF {
     }
 
     public static int computeLeftDisp(int n){
+        checkN();
         int[] totals = computeLeftRightTotals(n);
         return totals[0];
     }
 
     public static int computeRightDisp(int n){
+        checkN();
         int[] totals = computeLeftRightTotals(n);
         return totals[1];
     }
 
     public static int computeNetDisp(int n){
+        checkN();
         int[] totals = computeLeftRightTotals(n);
         return totals[1]-totals[0];
     }
