@@ -1,0 +1,225 @@
+# CSPF.py
+
+def check_n(n):
+    if n <= 0:
+        raise Exception('n must be a positive integer')
+    return
+
+def check_index(index):
+    max_index = N ** N
+    if index < 1 or index > max_index:
+        raise Exception ('Index must be between 1 and {}'.format(max_index))
+    return
+
+def check_car_num(carNum):
+    if carNum < 1 or carNum > N:
+        raise Exception ('Car number must be between 1 and {}'.format(N))
+    return
+
+def check_disp(disp):
+    max_disp= (N*(N-1))//2
+    if disp < 0 or disp > max_disp:
+        raise Exception ('Disp must be between 0 and {}'.format(max_disp))
+    return
+
+
+def print_all_cspf(n):
+    check_n(n)
+
+    total = n ** n
+    for i in range(total):
+        print(f"{i+1}. {get_one_cspf(n, i+1)}")
+    return
+
+def get_one_cspf(n, index):
+    check_n(n)
+    check_index(index)
+
+    return into_list(index-1)
+
+def into_list(index):
+    list = [0] * N
+    for i in range(N):
+        list[N - 1 - i] = ( index // N**i ) % N + 1
+    return list
+
+def get_disp(n, index, car_num):
+    check_n(n)
+    check_index(index)
+    check_car_num(car_num)
+
+    pref = into_list(index-1)
+    final_position, _ = simulate(pref)
+    return final_position[car_num-1]-(pref[car_num-1]-1)
+
+def simulate(pref):
+    size = len(pref)
+    occupied = [False] * size
+    final_position = [0] * size
+    has_tie = 0
+
+    for i in range(size):
+        p = pref[i] - 1
+        if not occupied[p]:
+            final_position[i] = p
+            occupied[p] = True
+            continue   # 直接下一辆车
+
+        # 双指针从 p 向左右扩展
+        left = p - 1
+        right = p + 1
+        found = False
+        while not found:
+            left_ok = left >= 0 and not occupied[left]
+            right_ok = right < size and not occupied[right]
+
+            if left_ok and right_ok:
+                has_tie += 1
+                best_position = left
+                occupied[left] = True
+                found = True
+            elif left_ok:
+                best_position = left
+                occupied[left] = True
+                found = True
+            elif right_ok:
+                best_position = right
+                occupied[right] = True
+                found = True
+            else:
+                left -= 1
+                right += 1
+                if left < 0 and right >= size:
+                    raise RuntimeError("No empty spot available")
+
+        final_position[i] = best_position
+
+    return final_position, has_tie
+
+def print_unit_interval_cspf(n):
+    check_n(n)
+
+    total = n ** n
+    for i in range(total):
+        if is_unit_interval_cspf(n, i+1):
+            print(f"{i+1}. {into_list(i)}")
+    return
+
+def is_unit_interval_cspf(n, index):
+    check_n(n)
+    check_index(index)
+
+    for k in range(n):
+        if abs(get_disp(n, index, k+1))>1:
+            return False
+    return True
+
+def count_unit_interval_cspf(n):
+    check_n(n)
+
+    count = 0
+    total = n ** n
+    for i in range(total):
+        if is_unit_interval_cspf(n, i+1):
+            count += 1
+    return count
+
+def get_t_disp(n):
+    check_n(n)
+    total_configues = n ** n
+    max_total_disp = n*(n-1)//2
+    freq = [0] * (max_total_disp+1)
+
+    for i in range(total_configues):
+        pref = into_list(i)
+        total_disp = calc_total_disp(pref)
+        freq[total_disp]+=1
+    return freq
+
+def calc_total_disp(pref):
+    final_position, _ = simulate(pref)
+    total = 0
+    for i in range(N):
+        total += abs(final_position[i]-(pref[i]-1))
+    return total
+
+def get_t(disp, n):
+    check_disp(disp)
+    t = get_t_disp(n)
+    return t[disp]
+
+def print_cspf_by_disp(n, disp):
+    check_disp(disp)
+
+    total_configues = n**n
+    for index in range(total_configues):
+        pref = into_list(index)
+        total_disp = calc_total_disp(pref)
+        if total_disp == disp:
+            print(f"{index+1}. {pref}")
+    return
+
+def print_different_disp(n):
+    check_n(n)
+    totals = compute_left_right_totals(n)
+    print("Left total  = "+str(totals[0]))
+    print("Right total = "+str(totals[1]))
+    print("Net (R-L)   = "+str(totals[1]-totals[0]))
+    print("Sum(n)      = "+str(totals[1]+totals[0]))
+    return
+
+def compute_left_right_totals(n):
+    check_n(n)
+    total_left = 0
+    total_right = 0
+    total_configues = n ** n
+    for i in range(total_configues):
+        pref = into_list(i)
+        lr = calc_left_right(pref)
+        total_left+=lr[0]
+        total_right+=lr[1]
+    return [total_left, total_right]
+
+def calc_left_right(pref):
+    final_position, _ = simulate(pref)
+    left = 0
+    right = 0
+    for i in range(N):
+        diff = final_position[i] - (pref[i]-1)
+        if diff<0:
+            left += -diff
+        elif diff>0:
+            right += diff
+    return [left, right]
+
+def is_a_strict_cspf(n, index):
+    check_n(n)
+    check_index(index)
+
+    pref = get_one_cspf(n, index)
+    _, has_tie = simulate(pref)
+    return has_tie == 0
+
+def print_all_non_strict_cspf(n):
+    check_n(n)
+    total = n ** n
+    for i in range(total):
+        if not is_a_strict_cspf(n, i+1):
+            print(f"{i+1}. {get_one_cspf(n, i+1)}")
+    return
+
+if __name__ == '__main__':
+    N = 5
+    Index = 7
+    Car_num = 3
+    Disp = 2
+
+    # print_all_cspf(N)
+    # print(get_one_cspf(N, Index))
+    # print(get_disp(N, Index, Car_num))
+    # print_unit_interval_cspf(N)
+    # print(count_unit_interval_cspf(N))
+    # print(get_t_disp(N))
+    # print(get_t(Disp, N))
+    # print(is_a_strict_cspf(N, Index))
+    # print_all_non_strict_cspf(N)
