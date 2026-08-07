@@ -408,6 +408,8 @@ if __name__ == '__main__':
     # print(get_t_disp(N))
 
     # print(get_t(Disp, N))
+    
+    # print_cspf_by_disp(n, disp)
 
     # print(is_a_strict_cspf(N, Index))
     
